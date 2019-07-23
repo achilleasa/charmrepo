@@ -338,6 +338,34 @@ func (s *charmStoreRepoSuite) TestGetBundleWithEmptyArchivePath(c *gc.C) {
 	c.Assert(b.ReadMe(), gc.Equals, expect.ReadMe())
 }
 
+func (s *charmStoreRepoSuite) TestGetBundleDataSource(c *gc.C) {
+	// Note that getting a bundle shares most of the logic with charm
+	// retrieval. For this reason, only bundle specific code is tested.
+	s.addCharm(c, "cs:trusty/mysql-0", "mysql")
+	s.addCharm(c, "cs:trusty/wordpress-0", "wordpress")
+	expect, url := s.addBundle(c, "cs:~who/bundle/wordpress-simple-42", "wordpress-simple")
+	ds, err := s.repo.GetBundleDataSource(url, filepath.Join(c.MkDir(), "bundle"))
+	c.Assert(err, jc.ErrorIsNil)
+
+	parts := ds.Parts()
+	c.Assert(parts, gc.HasLen, 1)
+	c.Assert(parts[0].Data, jc.DeepEquals, expect.Data())
+}
+
+func (s *charmStoreRepoSuite) TestGetBundleDataSourceWithEmptyArchivePath(c *gc.C) {
+	// Note that getting a bundle shares most of the logic with charm
+	// retrieval. For this reason, only bundle specific code is tested.
+	s.addCharm(c, "cs:trusty/mysql-0", "mysql")
+	s.addCharm(c, "cs:trusty/wordpress-0", "wordpress")
+	expect, url := s.addBundle(c, "cs:~who/bundle/wordpress-simple-42", "wordpress-simple")
+	ds, err := s.repo.GetBundleDataSource(url, "")
+	c.Assert(err, jc.ErrorIsNil)
+
+	parts := ds.Parts()
+	c.Assert(parts, gc.HasLen, 1)
+	c.Assert(parts[0].Data, jc.DeepEquals, expect.Data())
+}
+
 func (s *charmStoreRepoSuite) TestGetBundleErrorCharm(c *gc.C) {
 	ch, err := s.repo.GetBundle(charm.MustParseURL("cs:trusty/django"), filepath.Join(c.MkDir(), "bundle"))
 	c.Assert(err, gc.ErrorMatches, `expected a bundle URL, got charm URL "cs:trusty/django"`)

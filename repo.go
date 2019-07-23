@@ -22,6 +22,10 @@ type Interface interface {
 	// GetBundle returns the bundle referenced by curl.
 	GetBundle(curl *charm.URL, archivePath string) (charm.Bundle, error)
 
+	// GetBundleDataSource returns a BundleDataSource instance for accessing
+	// the contents of the potentially multi-doc bundle referenced by curl.
+	GetBundleDataSource(curl *charm.URL, archivePath string) (charm.BundleDataSource, error)
+
 	// Resolve resolves the given reference to a canonical form which refers
 	// unambiguously to a specific revision of an entity. If the entity
 	// is a charm that may support more than one series, canonRef.Series will

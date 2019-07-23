@@ -129,6 +129,31 @@ func (s *CharmStore) GetBundle(curl *charm.URL, archivePath string) (charm.Bundl
 	return charm.ReadBundleArchive(archivePath)
 }
 
+// GetBundleDataSource implements Interface.GetBundleDataSource.
+func (s *CharmStore) GetBundleDataSource(curl *charm.URL, archivePath string) (charm.BundleDataSource, error) {
+	if curl.Series != "bundle" {
+		return nil, errgo.Newf("expected a bundle URL, got charm URL %q", curl)
+	}
+	if archivePath == "" {
+		f, err := ioutil.TempFile("", "bundle-archive")
+		if err != nil {
+			return nil, errgo.Mask(err)
+		}
+		archivePath = f.Name()
+		_ = f.Close()
+		defer func() { _ = os.Remove(archivePath) }()
+	}
+	f, err := os.Create(archivePath)
+	if err != nil {
+		return nil, errgo.Mask(err)
+	}
+	defer f.Close()
+	if err := s.getArchive(curl, f); err != nil {
+		return nil, errgo.Mask(err, errgo.Any)
+	}
+	return charm.LocalBundleDataSource(archivePath)
+}
+
 // getArchive reads the archive from the given charm or bundle URL
 // and writes it to the given writer.
 func (s *CharmStore) getArchive(curl *charm.URL, w io.Writer) error {
