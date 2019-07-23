@@ -1,4 +1,4 @@
-module gopkg.in/juju/charmrepo.v4
+module gopkg.in/juju/charmrepo.v5
 
 require (
 	github.com/juju/loggo v0.0.0-20180524022052-584905176618

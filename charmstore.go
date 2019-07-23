@@ -1,7 +1,7 @@
 // Copyright 2015 Canonical Ltd.
 // Licensed under the LGPLv3, see LICENCE file for details.
 
-package charmrepo // import "gopkg.in/juju/charmrepo.v4"
+package charmrepo // import "gopkg.in/juju/charmrepo.v5"
 
 import (
 	"crypto/sha512"
@@ -14,8 +14,8 @@ import (
 	"gopkg.in/juju/charm.v6"
 	"gopkg.in/macaroon-bakery.v2/httpbakery"
 
-	"gopkg.in/juju/charmrepo.v4/csclient"
-	"gopkg.in/juju/charmrepo.v4/csclient/params"
+	"gopkg.in/juju/charmrepo.v5/csclient"
+	"gopkg.in/juju/charmrepo.v5/csclient/params"
 )
 
 // CharmStore is a repository Interface that provides access to the public Juju
