@@ -7,6 +7,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"sort"
 
@@ -83,6 +84,15 @@ func (s *CharmStore) Get(curl *charm.URL, archivePath string) (*charm.CharmArchi
 	if curl.Series == "bundle" {
 		return nil, errgo.Newf("expected a charm URL, got bundle URL %q", curl)
 	}
+	if archivePath == "" {
+		f, err := ioutil.TempFile("", "charm-archive")
+		if err != nil {
+			return nil, errgo.Mask(err)
+		}
+		archivePath = f.Name()
+		_ = f.Close()
+		defer func() { _ = os.Remove(archivePath) }()
+	}
 	f, err := os.Create(archivePath)
 	if err != nil {
 		return nil, errgo.Mask(err)
@@ -98,6 +108,15 @@ func (s *CharmStore) Get(curl *charm.URL, archivePath string) (*charm.CharmArchi
 func (s *CharmStore) GetBundle(curl *charm.URL, archivePath string) (charm.Bundle, error) {
 	if curl.Series != "bundle" {
 		return nil, errgo.Newf("expected a bundle URL, got charm URL %q", curl)
+	}
+	if archivePath == "" {
+		f, err := ioutil.TempFile("", "bundle-archive")
+		if err != nil {
+			return nil, errgo.Mask(err)
+		}
+		archivePath = f.Name()
+		_ = f.Close()
+		defer func() { _ = os.Remove(archivePath) }()
 	}
 	f, err := os.Create(archivePath)
 	if err != nil {

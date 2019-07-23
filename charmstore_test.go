@@ -206,6 +206,13 @@ func (s *charmStoreRepoSuite) TestGet(c *gc.C) {
 	checkCharm(c, ch, expect)
 }
 
+func (s *charmStoreRepoSuite) TestGetWithEmptyArchivePath(c *gc.C) {
+	expect, url := s.addCharm(c, "cs:~who/trusty/mysql-0", "mysql")
+	ch, err := s.repo.Get(url, "")
+	c.Assert(err, jc.ErrorIsNil)
+	checkCharm(c, ch, expect)
+}
+
 func (s *charmStoreRepoSuite) TestGetPromulgated(c *gc.C) {
 	expect, url := s.addCharm(c, "trusty/mysql-42", "mysql")
 	ch, err := s.repo.Get(url, filepath.Join(c.MkDir(), "charm"))
@@ -314,6 +321,18 @@ func (s *charmStoreRepoSuite) TestGetBundle(c *gc.C) {
 	s.addCharm(c, "cs:trusty/wordpress-0", "wordpress")
 	expect, url := s.addBundle(c, "cs:~who/bundle/wordpress-simple-42", "wordpress-simple")
 	b, err := s.repo.GetBundle(url, filepath.Join(c.MkDir(), "bundle"))
+	c.Assert(err, jc.ErrorIsNil)
+	c.Assert(b.Data(), jc.DeepEquals, expect.Data())
+	c.Assert(b.ReadMe(), gc.Equals, expect.ReadMe())
+}
+
+func (s *charmStoreRepoSuite) TestGetBundleWithEmptyArchivePath(c *gc.C) {
+	// Note that getting a bundle shares most of the logic with charm
+	// retrieval. For this reason, only bundle specific code is tested.
+	s.addCharm(c, "cs:trusty/mysql-0", "mysql")
+	s.addCharm(c, "cs:trusty/wordpress-0", "wordpress")
+	expect, url := s.addBundle(c, "cs:~who/bundle/wordpress-simple-42", "wordpress-simple")
+	b, err := s.repo.GetBundle(url, "")
 	c.Assert(err, jc.ErrorIsNil)
 	c.Assert(b.Data(), jc.DeepEquals, expect.Data())
 	c.Assert(b.ReadMe(), gc.Equals, expect.ReadMe())
