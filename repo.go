@@ -10,6 +10,7 @@ import (
 
 	"github.com/juju/loggo"
 	"gopkg.in/juju/charm.v6"
+	"gopkg.in/juju/charmrepo.v3/csclient/params"
 )
 
 var logger = loggo.GetLogger("juju.charm.charmrepo")
@@ -18,6 +19,10 @@ var logger = loggo.GetLogger("juju.charm.charmrepo")
 type Interface interface {
 	// Get returns the charm referenced by curl.
 	Get(curl *charm.URL) (charm.Charm, error)
+
+	// GetCharmProxy returns a lightweight charm representation without
+	// the need to download the full charm archive.
+	GetCharmProxy(curl *charm.URL, channel params.Channel) (charm.Charm, error)
 
 	// GetBundle returns the bundle referenced by curl.
 	GetBundle(curl *charm.URL) (charm.Bundle, error)
