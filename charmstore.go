@@ -115,6 +115,39 @@ func (s *CharmStore) Get(curl *charm.URL) (charm.Charm, error) {
 	return charm.ReadCharmArchive(path)
 }
 
+// GetCharmProxy implements Interface.GetCharmProxy.
+func (s *CharmStore) GetCharmProxy(curl *charm.URL, channel params.Channel) (charm.Charm, error) {
+	if curl.Series == "bundle" {
+		return nil, errgo.Newf("expected a charm URL, got bundle URL %q", curl)
+	}
+
+	var lc lightweightCharm
+	if _, err := s.client.MetaWithChannel(curl, &lc, channel); err != nil {
+		if errgo.Cause(err) == params.ErrNotFound {
+			// Make a prettier error message for the user.
+			return nil, errgo.WithCausef(nil, params.ErrNotFound, "cannot retrieve %q: charm not found", curl)
+		}
+		return nil, errgo.NoteMask(err, fmt.Sprintf("cannot retrieve metadata for charm %q", curl), errgo.Any)
+	}
+
+	res, err := s.client.GetFileFromArchive(curl, "lxd-profile.yaml")
+	if err != nil {
+		if errgo.Cause(err) != params.ErrNotFound {
+			return nil, errgo.NoteMask(err, fmt.Sprintf("cannot retrieve lxd-profile info for charm %q", curl), errgo.Any)
+		}
+
+		lc.lxdProfile = charm.NewLXDProfile()
+		return &lc, nil
+	}
+	defer func() { _ = res.Close() }()
+
+	if lc.lxdProfile, err = charm.ReadLXDProfile(res); err != nil {
+		return nil, errgo.NoteMask(err, fmt.Sprintf("cannot parse lxd-profile info for charm %q", curl), errgo.Any)
+	}
+
+	return &lc, nil
+}
+
 // GetBundle implements Interface.GetBundle.
 func (s *CharmStore) GetBundle(curl *charm.URL) (charm.Bundle, error) {
 	// The cache location must have been previously set.
@@ -319,3 +352,19 @@ type orderedOldChannels []params.Channel
 func (o orderedOldChannels) Len() int           { return len(o) }
 func (o orderedOldChannels) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o orderedOldChannels) Less(i, j int) bool { return oldChannels[o[i]] < oldChannels[o[j]] }
+
+type lightweightCharm struct {
+	CharmMetadata *charm.Meta
+	CharmConfig   *charm.Config
+	CharmMetrics  *charm.Metrics
+	CharmActions  *charm.Actions
+	IdRevision    params.IdRevisionResponse
+	lxdProfile    *charm.LXDProfile
+}
+
+func (lc *lightweightCharm) Meta() *charm.Meta             { return lc.CharmMetadata }
+func (lc *lightweightCharm) Config() *charm.Config         { return lc.CharmConfig }
+func (lc *lightweightCharm) Metrics() *charm.Metrics       { return lc.CharmMetrics }
+func (lc *lightweightCharm) Actions() *charm.Actions       { return lc.CharmActions }
+func (lc *lightweightCharm) Revision() int                 { return lc.IdRevision.Revision }
+func (lc *lightweightCharm) LXDProfile() *charm.LXDProfile { return lc.lxdProfile }

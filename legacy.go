@@ -18,6 +18,7 @@ import (
 
 	"github.com/juju/utils"
 	"gopkg.in/juju/charm.v6"
+	"gopkg.in/juju/charmrepo.v3/csclient/params"
 )
 
 // LegacyCharmStore is a repository Interface that provides access to the
@@ -356,6 +357,10 @@ func (s *LegacyCharmStore) Get(curl *charm.URL) (charm.Charm, error) {
 		return nil, err
 	}
 	return charm.ReadCharmArchive(path)
+}
+
+func (s *LegacyCharmStore) GetCharmProxy(curl *charm.URL, channel params.Channel) (charm.Charm, error) {
+	return nil, errors.New("not implemented: legacy API does not support charm proxies")
 }
 
 // GetBundle is only defined for implementing Interface.

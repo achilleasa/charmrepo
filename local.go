@@ -4,6 +4,7 @@
 package charmrepo // import "gopkg.in/juju/charmrepo.v3"
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"gopkg.in/errgo.v1"
 	"gopkg.in/juju/charm.v6"
+	"gopkg.in/juju/charmrepo.v3/csclient/params"
 )
 
 // LocalRepository represents a local directory containing subdirectories
@@ -117,6 +119,10 @@ func (r *LocalRepository) Get(curl *charm.URL) (charm.Charm, error) {
 		return latest, nil
 	}
 	return nil, entityNotFound(curl, r.Path)
+}
+
+func (s *LocalRepository) GetCharmProxy(curl *charm.URL, channel params.Channel) (charm.Charm, error) {
+	return nil, errors.New("not implemented: local repository does not support charm proxies")
 }
 
 // GetBundle implements Interface.GetBundle.

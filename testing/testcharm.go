@@ -201,6 +201,11 @@ func (ch *Charm) Revision() int {
 	return ch.revision
 }
 
+// LXDProfile implements charm.Charm.LXDProfile
+func (ch *Charm) LXDProfile() *charm.LXDProfile {
+	return charm.NewLXDProfile()
+}
+
 // Archive returns a charm archive holding the charm.
 func (ch *Charm) Archive() *charm.CharmArchive {
 	ch.makeArchiveOnce.Do(ch.makeArchive)
